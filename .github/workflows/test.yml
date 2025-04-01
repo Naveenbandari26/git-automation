@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2  # Ensure previous commit is available
-
       - name: Detect Changed Files
         id: changed-files
         run: |
@@ -24,17 +23,22 @@ jobs:
           if [ -z "$BEFORE_COMMIT" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
             BEFORE_COMMIT=$(git rev-parse HEAD~1)  # Use last commit as fallback
           fi
-          
-          CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^solutions/')
-          echo "Detected changed files: $CHANGED_FILES"
-          
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No file changes detected. Exiting..."
-            exit 1
-          fi
-
-          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-          echo "::set-output name=changed_files::$CHANGED_FILES"
+            
+            # Get changed files in solutions/ directory
+            CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^solutions/' || true)
+            
+            echo "Detected changed files: $CHANGED_FILES"
+            
+            if [ -z "$CHANGED_FILES" ]; then
+              echo "No file changes detected. Exiting..."
+              exit 1
+            fi
+        
+            # Store changed files in a newline-separated format
+            echo "$CHANGED_FILES" > changed_files_list.txt
+            echo "CHANGED_FILES=$(cat changed_files_list.txt)" >> $GITHUB_ENV
+            echo "changed_files=$(cat changed_files_list.txt)" >> $GITHUB_OUTPUT
+        
 
       - name: Determine File Type
         id: determine-file
