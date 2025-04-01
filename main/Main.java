@@ -17,7 +17,6 @@ public class Main {
                 longest = Math.max(longest, length);
             }
         }
-
         return longest;
     }
 
