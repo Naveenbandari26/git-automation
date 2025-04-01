@@ -53,43 +53,43 @@ jobs:
           done
 
       - name: Install C Dependencies
-        if: steps.determine-file.outputs.language == 'C'
+        if: env.language == 'C'
         run: sudo apt update && sudo apt install -y gcc
 
       - name: Install C++ Dependencies
-        if: steps.determine-file.outputs.language == 'C++'
+        if: env.language == 'C++'
         run: sudo apt update && sudo apt install -y g++
 
       - name: Install Python Dependencies
-        if: steps.determine-file.outputs.language == 'Python'
+        if: env.language == 'Python'
         run: sudo apt update && sudo apt install -y python3
 
       - name: Install Java Dependencies
-        if: steps.determine-file.outputs.language == 'Java'
+        if: env.language == 'Java'
         run: sudo apt update && sudo apt install -y openjdk-17-jdk
 
       - name: Compile and Run C Tests
-        if: steps.determine-file.outputs.language == 'C'
+        if: env.language == 'C'
         run: |
           gcc testcases/ctest.c -o test_runner
           echo "Running C Test Cases..."
           ./test_runner | tee test_results.log  # Capture output in logs
 
       - name: Compile and Run C++ Tests
-        if: steps.determine-file.outputs.language == 'C++'
+        if: env.language == 'C++'
         run: |
           g++ testcases/cpptest.cpp -o test_runner_cpp
           echo "Running C++ Test Cases..."
           ./test_runner_cpp | tee test_results.log
 
       - name: Run Python Tests
-        if: steps.determine-file.outputs.language == 'Python'
+        if: env.language == 'Python'
         run: |
           echo "Running Python Test Cases..."
           python3 testcases/pythontest.py | tee test_results.log
 
       - name: Compile and Run Java Tests
-        if: steps.determine-file.outputs.language == 'Java'
+        if: env.language == 'Java'
         run: |
           javac testcases/MainTest.java
           echo "Running Java Test Cases..."
