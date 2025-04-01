@@ -19,8 +19,11 @@ jobs:
       - name: Set file and language
         id: detect-language
         run: |
+          # Find the first file pushed that matches the file extensions
           FILE=$(find . -type f \( -name "*.java" -o -name "*.c" -o -name "*.cpp" -o -name "*.py" \) | head -n 1)
           echo "Detected file: $FILE"
+
+          # Detect the type of the file and set the appropriate test file
           if [[ $FILE == *.java ]]; then
             echo "TEST_FILE=testcases/MainTest.java" >> $GITHUB_ENV
           elif [[ $FILE == *.c ]]; then
@@ -36,41 +39,58 @@ jobs:
 
       - name: Run respective test cases
         run: |
+          # Only run the tests if the language matches
           case $TEST_FILE in
             testcases/MainTest.java)
-              javac $TEST_FILE
-              if [ $? -eq 0 ]; then
-                java ${TEST_FILE%.java}
-              else
-                echo "Java test failed!"
-                exit 1
+              # Run Java tests
+              if [[ $FILE == *.java ]]; then
+                javac $TEST_FILE
+                if [ $? -eq 0 ]; then
+                  java ${TEST_FILE%.java}
+                else
+                  echo "Java test failed!"
+                  exit 1
+                fi
               fi
               ;;
+
             testcases/ctest.c)
-              gcc $TEST_FILE -o ctest
-              if [ $? -eq 0 ]; then
-                ./ctest
-              else
-                echo "C test failed!"
-                exit 1
+              # Run C tests
+              if [[ $FILE == *.c ]]; then
+                gcc $TEST_FILE -o ctest
+                if [ $? -eq 0 ]; then
+                  ./ctest
+                else
+                  echo "C test failed!"
+                  exit 1
+                fi
               fi
               ;;
+
             testcases/cpptest.cpp)
-              g++ $TEST_FILE -o cpptest
-              if [ $? -eq 0 ]; then
-                ./cpptest
-              else
-                echo "C++ test failed!"
-                exit 1
+              # Run C++ tests
+              if [[ $FILE == *.cpp ]]; then
+                g++ $TEST_FILE -o cpptest
+                if [ $? -eq 0 ]; then
+                  ./cpptest
+                else
+                  echo "C++ test failed!"
+                  exit 1
+                fi
               fi
               ;;
+
             testcases/pythontest.py)
-              python3 $TEST_FILE
-              if [ $? -ne 0 ]; then
-                echo "Python test failed!"
-                exit 1
+              # Run Python tests
+              if [[ $FILE == *.py ]]; then
+                python3 $TEST_FILE
+                if [ $? -ne 0 ]; then
+                  echo "Python test failed!"
+                  exit 1
+                fi
               fi
               ;;
+
             *)
               echo "No valid test file found!"
               exit 1

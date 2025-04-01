@@ -7,7 +7,6 @@ int longestMountain(int arr[], int n) {
     int longest = 0;
 
     for (int i = 1; i < n - 1; i++) {
-        // Check if arr[i] is a peak
         if (arr[i - 1] < arr[i] && arr[i] > arr[i + 1]) {
             int left = i - 1;
             int right = i + 1;
