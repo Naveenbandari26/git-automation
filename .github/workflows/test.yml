@@ -73,7 +73,7 @@ jobs:
         if: steps.determine-file.outputs.language == 'C++'
         run: |
           g++ main/main.cpp -o solution_cpp
-          ./solution_cpp < testcases/main.cpp
+          ./solution_cpp < testcases/cpptest.cpp
 
       - name: Run Python Program
         if: steps.determine-file.outputs.language == 'Python'
