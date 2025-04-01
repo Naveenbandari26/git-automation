@@ -17,6 +17,11 @@ jobs:
         with:
           fetch-depth: 2  # Ensure previous commit is available
 
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc g++ openjdk-17-jdk python3
+
       - name: Detect Changed Files
         id: changed-files
         run: |
@@ -26,25 +31,37 @@ jobs:
           fi
           
           CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD)
+          echo "Detected changed files: $CHANGED_FILES"
+          
           if [ -z "$CHANGED_FILES" ]; then
+            echo "No file changes detected. Exiting..."
             exit 1
           fi
+
           echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+          echo "::set-output name=changed_files::$CHANGED_FILES"
 
       - name: Determine File Type
         id: determine-file
         run: |
           if echo "$CHANGED_FILES" | grep -qE '\.c$'; then
             echo "language=C" >> $GITHUB_ENV
+            echo "::set-output name=language::C"
           elif echo "$CHANGED_FILES" | grep -qE '\.cpp$'; then
             echo "language=C++" >> $GITHUB_ENV
+            echo "::set-output name=language::C++"
           elif echo "$CHANGED_FILES" | grep -qE '\.py$'; then
             echo "language=Python" >> $GITHUB_ENV
+            echo "::set-output name=language::Python"
           elif echo "$CHANGED_FILES" | grep -qE '\.java$'; then
             echo "language=Java" >> $GITHUB_ENV
+            echo "::set-output name=language::Java"
           else
+            echo "No relevant file changes detected. Exiting..."
             exit 1
           fi
+
+     
 
       - name: Compile and Run C Program
         if: steps.determine-file.outputs.language == 'C'
@@ -62,6 +79,7 @@ jobs:
         if: steps.determine-file.outputs.language == 'Python'
         run: |
           if [ ! -f main/main.py ]; then
+            echo "Error: Python script not found!"
             exit 1
           fi
           python3 main/main.py < testcases/main.py
@@ -70,4 +88,4 @@ jobs:
         if: steps.determine-file.outputs.language == 'Java'
         run: |
           javac main/Main.java
-          java main/Main < testcases/MainTest.java
+          java main/Main.java < testcases/MainTest.java
