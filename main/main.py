@@ -18,7 +18,6 @@ class Solution:
                 while right < n - 1 and arr[right] > arr[right + 1]:
                     right += 1
 
-                # Only count valid mountain if length >= 3
                 length = right - left + 1
                 if length >= 3:
                     longest = max(longest, length)
