@@ -25,7 +25,7 @@ jobs:
           fi
             
             # Get changed files in solutions/ directory
-            CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^solutions/' || true)
+            CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^main/' || true)
             
             echo "Detected changed files: $CHANGED_FILES"
             
