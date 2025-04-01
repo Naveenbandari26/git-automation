@@ -1,98 +1,91 @@
-name: Run Code Submissions
+name: Run Code Tests
 
 on:
   push:
     paths:
-      - "**/*.java"
-      - "**/*.c"
-      - "**/*.cpp"
-      - "**/*.py"
+      - "main/**"
+  pull_request:
+    paths:
+      - "testcases/**"
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Ensure previous commit is available
 
-      - name: Set file and language
-        id: detect-language
+      - name: Install Dependencies
         run: |
-          # Find the first file pushed that matches the file extensions
-          FILE=$(find . -type f \( -name "*.java" -o -name "*.c" -o -name "*.cpp" -o -name "*.py" \) | head -n 1)
-          echo "Detected file: $FILE"
+          sudo apt update
+          sudo apt install -y gcc g++ openjdk-17-jdk python3
 
-          # Detect the type of the file and set the appropriate test file
-          if [[ $FILE == *.java ]]; then
-            echo "TEST_FILE=testcases/MainTest.java" >> $GITHUB_ENV
-          elif [[ $FILE == *.c ]]; then
-            echo "TEST_FILE=testcases/ctest.c" >> $GITHUB_ENV
-          elif [[ $FILE == *.cpp ]]; then
-            echo "TEST_FILE=testcases/cpptest.cpp" >> $GITHUB_ENV
-          elif [[ $FILE == *.py ]]; then
-            echo "TEST_FILE=testcases/pythontest.py" >> $GITHUB_ENV
-          else
-            echo "No valid file detected!"
+      - name: Detect Changed Files
+        id: changed-files
+        run: |
+          BEFORE_COMMIT="${{ github.event.before }}"
+          if [ -z "$BEFORE_COMMIT" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
+            BEFORE_COMMIT=$(git rev-parse HEAD~1)  # Use last commit as fallback
+          fi
+          
+          CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD)
+          echo "Detected changed files: $CHANGED_FILES"
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No file changes detected. Exiting..."
             exit 1
           fi
 
-      - name: Run respective test cases
+          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+          echo "::set-output name=changed_files::$CHANGED_FILES"
+
+      - name: Determine File Type
+        id: determine-file
         run: |
-          # Only run the tests if the language matches
-          case $TEST_FILE in
-            testcases/MainTest.java)
-              # Run Java tests
-              if [[ $FILE == *.java ]]; then
-                javac $TEST_FILE
-                if [ $? -eq 0 ]; then
-                  java ${TEST_FILE%.java}
-                else
-                  echo "Java test failed!"
-                  exit 1
-                fi
-              fi
-              ;;
+          if echo "$CHANGED_FILES" | grep -qE '\.c$'; then
+            echo "language=C" >> $GITHUB_ENV
+            echo "::set-output name=language::C"
+          elif echo "$CHANGED_FILES" | grep -qE '\.cpp$'; then
+            echo "language=C++" >> $GITHUB_ENV
+            echo "::set-output name=language::C++"
+          elif echo "$CHANGED_FILES" | grep -qE '\.py$'; then
+            echo "language=Python" >> $GITHUB_ENV
+            echo "::set-output name=language::Python"
+          elif echo "$CHANGED_FILES" | grep -qE '\.java$'; then
+            echo "language=Java" >> $GITHUB_ENV
+            echo "::set-output name=language::Java"
+          else
+            echo "No relevant file changes detected. Exiting..."
+            exit 1
+          fi
 
-            testcases/ctest.c)
-              # Run C tests
-              if [[ $FILE == *.c ]]; then
-                gcc $TEST_FILE -o ctest
-                if [ $? -eq 0 ]; then
-                  ./ctest
-                else
-                  echo "C test failed!"
-                  exit 1
-                fi
-              fi
-              ;;
+     
 
-            testcases/cpptest.cpp)
-              # Run C++ tests
-              if [[ $FILE == *.cpp ]]; then
-                g++ $TEST_FILE -o cpptest
-                if [ $? -eq 0 ]; then
-                  ./cpptest
-                else
-                  echo "C++ test failed!"
-                  exit 1
-                fi
-              fi
-              ;;
+      - name: Compile and Run C Program
+        if: steps.determine-file.outputs.language == 'C'
+        run: |
+          gcc main/*.c -o solution_c
+          ./solution_c < tests/main.c
 
-            testcases/pythontest.py)
-              # Run Python tests
-              if [[ $FILE == *.py ]]; then
-                python3 $TEST_FILE
-                if [ $? -ne 0 ]; then
-                  echo "Python test failed!"
-                  exit 1
-                fi
-              fi
-              ;;
+      - name: Compile and Run C++ Program
+        if: steps.determine-file.outputs.language == 'C++'
+        run: |
+          g++ main/*.cpp -o solution_cpp
+          ./solution_cpp < tests/main.cpp
 
-            *)
-              echo "No valid test file found!"
-              exit 1
-              ;;
-          esac
+      - name: Run Python Program
+        if: steps.determine-file.outputs.language == 'Python'
+        run: |
+          if [ ! -f main/*.py ]; then
+            echo "Error: Python script not found!"
+            exit 1
+          fi
+          python3 main/*.py < tests/main.py
+
+      - name: Compile and Run Java Program
+        if: steps.determine-file.outputs.language == 'Java'
+        run: |
+          javac main/*.java
+          java -cp solutions Solution < tests/MainTest.java
