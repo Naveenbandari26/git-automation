@@ -67,13 +67,13 @@ jobs:
         if: steps.determine-file.outputs.language == 'C'
         run: |
           cc main/*.c -o solution_c
-          ./solution_c < tests/main.c
+          ./solution_c < testcases/main.c
 
       - name: Compile and Run C++ Program
         if: steps.determine-file.outputs.language == 'C++'
         run: |
           g++ main/*.cpp -o solution_cpp
-          ./solution_cpp < tests/main.cpp
+          ./solution_cpp < testcases/main.cpp
 
       - name: Run Python Program
         if: steps.determine-file.outputs.language == 'Python'
@@ -82,10 +82,10 @@ jobs:
             echo "Error: Python script not found!"
             exit 1
           fi
-          python3 main/*.py < tests/main.py
+          python3 main/*.py < testcases/main.py
 
       - name: Compile and Run Java Program
         if: steps.determine-file.outputs.language == 'Java'
         run: |
           javac main/*.java
-          java -cp solutions Solution < tests/MainTest.java
+          java -cp solutions Solution < testcases/MainTest.java
