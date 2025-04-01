@@ -2,7 +2,6 @@ package main;
 public class Main {
     public static int longestMountain(int[] arr) {
         if (arr.length < 3) return 0;
-
         int longest = 0;
 
         for (int i = 1; i < arr.length - 1; i++) {
