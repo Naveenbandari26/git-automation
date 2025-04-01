@@ -1,4 +1,4 @@
-package main;
+package main; //pacakage name
 public class Main {
     public static int longestMountain(int[] arr) {
         if (arr.length < 3) return 0;
