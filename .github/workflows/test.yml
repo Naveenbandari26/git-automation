@@ -71,14 +71,14 @@ jobs:
       - name: Compile and Run C Tests
         if: steps.determine-file.outputs.language == 'C'
         run: |
-          gcc tests/test.c -o test_runner
+          gcc testcases/ctest.c -o test_runner
           echo "Running C Test Cases..."
           ./test_runner | tee test_results.log  # Capture output in logs
 
       - name: Compile and Run C++ Tests
         if: steps.determine-file.outputs.language == 'C++'
         run: |
-          g++ tests/test.cpp -o test_runner_cpp
+          g++ testcases/cpptest.cpp -o test_runner_cpp
           echo "Running C++ Test Cases..."
           ./test_runner_cpp | tee test_results.log
 
@@ -86,14 +86,14 @@ jobs:
         if: steps.determine-file.outputs.language == 'Python'
         run: |
           echo "Running Python Test Cases..."
-          python3 tests/test.py | tee test_results.log
+          python3 testcases/pythontest.py | tee test_results.log
 
       - name: Compile and Run Java Tests
         if: steps.determine-file.outputs.language == 'Java'
         run: |
-          javac tests/Test.java
+          javac testcases/MainTest.java
           echo "Running Java Test Cases..."
-          java -cp tests Test | tee test_results.log
+          java -cp testcases Test | tee test_results.log
 
       - name: Upload Test Results
         if: always()
