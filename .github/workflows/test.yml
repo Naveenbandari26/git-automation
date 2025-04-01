@@ -66,7 +66,7 @@ jobs:
       - name: Compile and Run C Program
         if: steps.determine-file.outputs.language == 'C'
         run: |
-          gcc main/*.c -o solution_c
+          cc main/*.c -o solution_c
           ./solution_c < tests/main.c
 
       - name: Compile and Run C++ Program
