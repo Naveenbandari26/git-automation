@@ -19,8 +19,6 @@ public class Main {
         }
 
         return longest;
-
-        ///ans
     }
 
     public static void main(String[] args) {
