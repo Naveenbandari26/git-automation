@@ -1,4 +1,4 @@
-class Solution:
+class Solution: #class
     def longestMountain(self, arr):
         n = len(arr)
         if n < 3:
