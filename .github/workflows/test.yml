@@ -1,0 +1,78 @@
+name: Run Code Submissions
+
+on:
+  push:
+    paths:
+      - "/*.java"
+      - "/*.c"
+      - "/*.cpp"
+      - "/*.py"
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set file and language
+        id: detect-language
+        run: |
+          FILE=$(find . -type f \( -name ".java" -o -name ".c" -o -name ".cpp" -o -name ".py" \) | head -n 1)
+          echo "Detected file: $FILE"
+          if [[ $FILE == *.java ]]; then
+            echo "TEST_FILE=testcases/MainTest.java" >> $GITHUB_ENV
+          elif [[ $FILE == *.c ]]; then
+            echo "TEST_FILE=testcases/ctest.c" >> $GITHUB_ENV
+          elif [[ $FILE == *.cpp ]]; then
+            echo "TEST_FILE=testcases/cpptest.cpp" >> $GITHUB_ENV
+          elif [[ $FILE == *.py ]]; then
+            echo "TEST_FILE=testcases/pythontest.python" >> $GITHUB_ENV
+          else
+            echo "No valid file detected!"
+            exit 1
+          fi
+
+      - name: Run respective test cases
+        run: |
+          case $TEST_FILE in
+            testcases/MainTest.java)
+              javac $TEST_FILE
+              if [ $? -eq 0 ]; then
+                java ${TEST_FILE%.java}
+              else
+                echo "Java test failed!"
+                exit 1
+              fi
+              ;;
+            testcases/ctest.c)
+              gcc $TEST_FILE -o ctest
+              if [ $? -eq 0 ]; then
+                ./ctest
+              else
+                echo "C test failed!"
+                exit 1
+              fi
+              ;;
+            testcases/cpptest.cpp)
+              g++ $TEST_FILE -o cpptest
+              if [ $? -eq 0 ]; then
+                ./cpptest
+              else
+                echo "C++ test failed!"
+                exit 1
+              fi
+              ;;
+            python -m testcases.pythontest)
+              python3 $TEST_FILE
+              if [ $? -ne 0 ]; then
+                echo "Python test failed!"
+                exit 1
+              fi
+              ;;
+            *)
+              echo "No valid test file found!"
+              exit 1
+              ;;
+          esac
