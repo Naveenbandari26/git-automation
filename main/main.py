@@ -11,7 +11,6 @@ class Solution:
                 left = i - 1
                 right = i + 1
 
-                # Expand to the left (avoid flat sections)
                 while left > 0 and arr[left - 1] < arr[left]:
                     left -= 1
 
