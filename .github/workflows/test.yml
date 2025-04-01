@@ -3,10 +3,10 @@ name: Run Code Submissions
 on:
   push:
     paths:
-      - "/main*.java"
-      - "/main*.c"
-      - "/main*.cpp"
-      - "/main*.py"
+      - "/*.java"
+      - "/*.c"
+      - "/*.cpp"
+      - "/*.py"
 
 jobs:
   run-tests:
