@@ -3,10 +3,10 @@ name: Run Code Submissions
 on:
   push:
     paths:
-      - "/*.java"
-      - "/*.c"
-      - "/*.cpp"
-      - "/*.py"
+      - "**/*.java"
+      - "**/*.c"
+      - "**/*.cpp"
+      - "**/*.py"
 
 jobs:
   run-tests:
@@ -19,7 +19,7 @@ jobs:
       - name: Set file and language
         id: detect-language
         run: |
-          FILE=$(find . -type f \( -name ".java" -o -name ".c" -o -name ".cpp" -o -name ".py" \) | head -n 1)
+          FILE=$(find . -type f \( -name "*.java" -o -name "*.c" -o -name "*.cpp" -o -name "*.py" \) | head -n 1)
           echo "Detected file: $FILE"
           if [[ $FILE == *.java ]]; then
             echo "TEST_FILE=testcases/MainTest.java" >> $GITHUB_ENV
@@ -28,7 +28,7 @@ jobs:
           elif [[ $FILE == *.cpp ]]; then
             echo "TEST_FILE=testcases/cpptest.cpp" >> $GITHUB_ENV
           elif [[ $FILE == *.py ]]; then
-            echo "TEST_FILE=testcases/pythontest.python" >> $GITHUB_ENV
+            echo "TEST_FILE=testcases/pythontest.py" >> $GITHUB_ENV
           else
             echo "No valid file detected!"
             exit 1
@@ -64,7 +64,7 @@ jobs:
                 exit 1
               fi
               ;;
-            python -m testcases.pythontest)
+            testcases/pythontest.py)
               python3 $TEST_FILE
               if [ $? -ne 0 ]; then
                 echo "Python test failed!"
