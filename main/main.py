@@ -14,7 +14,6 @@ class Solution:
                 while left > 0 and arr[left - 1] < arr[left]:
                     left -= 1
 
-                # Expand to the right (avoid flat sections)
                 while right < n - 1 and arr[right] > arr[right + 1]:
                     right += 1
 
