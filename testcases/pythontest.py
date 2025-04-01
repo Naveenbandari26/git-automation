@@ -1,5 +1,11 @@
-# /GitHub-TestCases-Automat.../testcases/pythontest.py
-from main.main import Solution  # Absolute import
+
+import sys
+import os
+
+# Add the project root directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from main.main import Solution  # Now this should work
 
 def run_test_case(arr, expected, passed_count, total):
     total[0] += 1
