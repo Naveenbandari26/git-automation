@@ -17,11 +17,6 @@ jobs:
         with:
           fetch-depth: 2  # Ensure previous commit is available
 
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y gcc g++ openjdk-17-jdk python3
-
       - name: Detect Changed Files
         id: changed-files
         run: |
@@ -30,7 +25,7 @@ jobs:
             BEFORE_COMMIT=$(git rev-parse HEAD~1)  # Use last commit as fallback
           fi
           
-          CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD)
+          CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^solutions/')
           echo "Detected changed files: $CHANGED_FILES"
           
           if [ -z "$CHANGED_FILES" ]; then
@@ -44,48 +39,61 @@ jobs:
       - name: Determine File Type
         id: determine-file
         run: |
-          if echo "$CHANGED_FILES" | grep -qE '\.c$'; then
-            echo "language=C" >> $GITHUB_ENV
-            echo "::set-output name=language::C"
-          elif echo "$CHANGED_FILES" | grep -qE '\.cpp$'; then
-            echo "language=C++" >> $GITHUB_ENV
-            echo "::set-output name=language::C++"
-          elif echo "$CHANGED_FILES" | grep -qE '\.py$'; then
-            echo "language=Python" >> $GITHUB_ENV
-            echo "::set-output name=language::Python"
-          elif echo "$CHANGED_FILES" | grep -qE '\.java$'; then
-            echo "language=Java" >> $GITHUB_ENV
-            echo "::set-output name=language::Java"
-          else
-            echo "No relevant file changes detected. Exiting..."
-            exit 1
-          fi
+          for file in $CHANGED_FILES; do
+            case "$file" in
+              *.c) echo "language=C" >> $GITHUB_ENV ;;
+              *.cpp) echo "language=C++" >> $GITHUB_ENV ;;
+              *.py) echo "language=Python" >> $GITHUB_ENV ;;
+              *.java) echo "language=Java" >> $GITHUB_ENV ;;
+            esac
+          done
 
-     
+      - name: Install C Dependencies
+        if: steps.determine-file.outputs.language == 'C'
+        run: sudo apt update && sudo apt install -y gcc
 
-      - name: Compile and Run C Program
+      - name: Install C++ Dependencies
+        if: steps.determine-file.outputs.language == 'C++'
+        run: sudo apt update && sudo apt install -y g++
+
+      - name: Install Python Dependencies
+        if: steps.determine-file.outputs.language == 'Python'
+        run: sudo apt update && sudo apt install -y python3
+
+      - name: Install Java Dependencies
+        if: steps.determine-file.outputs.language == 'Java'
+        run: sudo apt update && sudo apt install -y openjdk-17-jdk
+
+      - name: Compile and Run C Tests
         if: steps.determine-file.outputs.language == 'C'
         run: |
-          cc main/main.c -o solution_c
-          ./solution_c < testcases/main.c
+          gcc tests/test.c -o test_runner
+          echo "Running C Test Cases..."
+          ./test_runner | tee test_results.log  # Capture output in logs
 
-      - name: Compile and Run C++ Program
+      - name: Compile and Run C++ Tests
         if: steps.determine-file.outputs.language == 'C++'
         run: |
-          g++ main/main.cpp -o solution_cpp
-          ./solution_cpp < testcases/cpptest.cpp
+          g++ tests/test.cpp -o test_runner_cpp
+          echo "Running C++ Test Cases..."
+          ./test_runner_cpp | tee test_results.log
 
-      - name: Run Python Program
+      - name: Run Python Tests
         if: steps.determine-file.outputs.language == 'Python'
         run: |
-          if [ ! -f main/main.py ]; then
-            echo "Error: Python script not found!"
-            exit 1
-          fi
-          python3 main/main.py < testcases/main.py
+          echo "Running Python Test Cases..."
+          python3 tests/test.py | tee test_results.log
 
-      - name: Compile and Run Java Program
+      - name: Compile and Run Java Tests
         if: steps.determine-file.outputs.language == 'Java'
         run: |
-          javac main/Main.java
-          java main/Main.java < testcases/MainTest.java
+          javac tests/Test.java
+          echo "Running Java Test Cases..."
+          java -cp tests Test | tee test_results.log
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.log
