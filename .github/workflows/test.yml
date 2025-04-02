@@ -93,7 +93,7 @@ jobs:
         run: |
           javac testcases/MainTest.java
           echo "Running Java Test Cases..."
-          java -cp testcases Test | tee test_results.log
+          java testcases/MainTest.java | tee test_results.log
 
       - name: Upload Test Results
         if: always()
