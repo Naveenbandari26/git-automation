@@ -86,9 +86,10 @@ jobs:
       - name: Compile and Run Java Tests
         if: env.LANGUAGE == 'Java'
         run: |
-          javac tests/Test.java
-          echo "Running Java Test Cases..."
-          java -cp tests Test | tee test_results.log
+            javac -d . tests/Test.java
+            echo "Running Java Test Cases..."
+            java -cp . tests.Test | tee test_results.log
+            if [ $? -ne 0 ]; then exit 1; fi
 
       - name: Upload Test Results
         if: always()
