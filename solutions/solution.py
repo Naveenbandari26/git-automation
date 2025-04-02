@@ -1,4 +1,4 @@
 __package__ = 'solutions'
-class Solution: #class
+class Solution:
     def longestMountain(self, arr):
        
