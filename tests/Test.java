@@ -1,12 +1,12 @@
-package testcases;
+package tests;
 import java.util.Arrays;
 
-import main.Main; // Adjust the import statement based on your project structure
+import solutions.solution; // Import the solution class
 
-public class MainTest {
+public class Test {
     public static void runTestCase(int[] arr, int expected, int[] passedCount, int[] total) {
         total[0]++;
-        int actual = Main.longestMountain(arr);
+        int actual = solution.longestMountain(arr);
 
         System.out.print("\nTest Case " + total[0] + ": ");
         

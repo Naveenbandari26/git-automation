@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../main/main.c"
+#include "../solutions/solution.c"
 
 void runTestCase(int* arr, int arrSize, int expected, int* passedCount, int* total) {
     (*total)++;

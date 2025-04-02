@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 
-#include "../main/main.cpp"
+#include "../solutions/solution.cpp"
 
 using namespace std;
 

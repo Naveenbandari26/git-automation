@@ -1,5 +1,5 @@
-package main; //package main
-public class Main {
+package solutions; //package main
+public class solution {
     public static int longestMountain(int[] arr) {
        
     }
