@@ -69,30 +69,35 @@ jobs:
           gcc tests/test.c -o test_runner
           echo "Running C Test Cases..."
           ./test_runner | tee test_results.log
-
+          if [ $? -ne 0 ]; then exit 1; fi  # Ensures failure on test failure
+      
       - name: Compile and Run C++ Tests
         if: env.LANGUAGE == 'C++'
         run: |
           g++ tests/test.cpp -o test_runner_cpp
           echo "Running C++ Test Cases..."
           ./test_runner_cpp | tee test_results.log
-
+          if [ $? -ne 0 ]; then exit 1; fi  # Ensures failure on test failure
+      
       - name: Run Python Tests
         if: env.LANGUAGE == 'Python'
         run: |
           echo "Running Python Test Cases..."
           python3 tests/test.py | tee test_results.log
-
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi  # Ensures failure on test failure
+      
       - name: Compile and Run Java Tests
         if: env.LANGUAGE == 'Java'
         run: |
           javac tests/Test.java
           echo "Running Java Test Cases..."
           java -cp tests Test | tee test_results.log
-
+          if [ $? -ne 0 ]; then exit 1; fi  # Ensures failure on test failure
+      
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test_results.log
+      
