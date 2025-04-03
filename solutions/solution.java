@@ -1,4 +1,4 @@
-package solutions; //package main
+package solutions;
 public class solution {
     public static int longestMountain(int[] arr) {
         
